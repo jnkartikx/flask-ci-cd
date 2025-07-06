@@ -37,7 +37,7 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'deploy-key', keyFileVariable: 'KEY')]) {
                     bat """
-                        echo y | plink.exe -i %KEY% -batch ec2-user@your-ec2-public-ip "docker pull %DOCKER_IMAGE% && docker stop flask-container || exit 0 && docker rm flask-container || exit 0 && docker run -d -p 5000:5000 --name flask-container %DOCKER_IMAGE%"
+                        echo y | plink.exe -i %KEY% -batch ec2-user@16.170.98.45 "docker pull %DOCKER_IMAGE% && docker stop flask-container || exit 0 && docker rm flask-container || exit 0 && docker run -d -p 5000:5000 --name flask-container %DOCKER_IMAGE%"
                     """
                 }
             }
