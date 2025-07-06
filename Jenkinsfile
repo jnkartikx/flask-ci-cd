@@ -17,7 +17,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh "docker build -t ${DOCKER_IMAGE}:latest ."
+                    bat "docker build -t ${DOCKER_IMAGE}:latest ."
                 }
             }
         }
@@ -25,21 +25,21 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    sh '''
-                        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                    bat '''
+                        echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin
                         docker push ${DOCKER_IMAGE}:latest
                     '''
                 }
             }
         }
 
-        stage('Deploy to Staging') {
+        stage('Deploy to EC2') {
             steps {
                 script {
                     sshagent(['deploy-key']) {
-                        sh """
+                        bat '''
                             ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} "docker pull ${DOCKER_IMAGE}:latest && docker run -d -p 5000:5000 ${DOCKER_IMAGE}:latest"
-                        """
+                        '''
                     }
                 }
             }
