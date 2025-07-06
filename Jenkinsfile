@@ -2,56 +2,46 @@ pipeline {
     agent any
 
     environment {
-        REPO_URL = 'https://github.com/jnkartikx/flask-ci-cd.git'    // your repo URL
-        DOCKER_IMAGE = 'kartikj7/flask-app'                          // your Docker Hub repo/image name
-        DEPLOY_SERVER = 'ec2-user@16.170.98.45'                      // your EC2 user and IP
-        DOCKER_USERNAME = 'kartikj7'                                 // your Docker Hub username
-        DOCKER_PASSWORD = '<Kartik@jadon1234>'       // your Docker Hub password or access token
+        REPO_URL = 'https://github.com/jnkartikx/flask-ci-cd.git'
+        DOCKER_IMAGE = 'kartikj7/flask-ci-cd:latest'
+          DEPLOY_SERVER = 'ubuntu@16.170.98.45'
     }
 
     stages {
+
         stage('Clone Repository') {
             steps {
-                it branch: 'main',credentialsId: 'dockerhub', url: "${REPO_URL}"
-
+                git branch: 'main',credentialsId: 'dockerhub', url: "${REPO_URL}"
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    sh 'docker build -t ${DOCKER_IMAGE}:latest .'
-                }
+                bat """
+                docker build -t ${DOCKER_IMAGE} .
+                """
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                script {
-                    sh '''
-                        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-                        docker push ${DOCKER_IMAGE}:latest
-                    '''
+                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    bat """
+                    docker login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%
+                    docker push ${DOCKER_IMAGE}
+                    """
                 }
             }
         }
 
-        stage('Deploy to Staging') {
+        stage('Deploy to EC2') {
             steps {
-                script {
-                    sshagent(['deploy-key']) {
-                        sh '''
-                            ssh ${DEPLOY_SERVER} "docker pull ${DOCKER_IMAGE}:latest && docker run -d -p 5000:5000 ${DOCKER_IMAGE}:latest"
-                        '''
-                    }
+                withCredentials([file(credentialsId: 'deploy-key', variable: 'KEY')]) {
+                    bat """
+                    plink.exe -i %KEY% -batch ubuntu@16.170.98.45 "docker pull ${DOCKER_IMAGE} && docker stop flask-container || exit 0 && docker rm flask-container || exit 0 && docker run -d -p 5000:5000 --name flask-container ${DOCKER_IMAGE}"
+                    """
                 }
             }
-        }
-    }
-
-    post {
-        always {
-            echo 'Pipeline execution completed.'
         }
     }
 }
