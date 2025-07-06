@@ -7,12 +7,11 @@ pipeline {
         DEPLOY_SERVER = 'ec2-user@<51.21.150.8>'
     }
 
-    stages {
-        stage('Clone Repository') {
-            steps {
-                git url: "${REPO_URL}"
-            }
-        }
+   stage('Clone Repository') {
+    steps {
+        git 'https://github.com/jnkartikx/flask-ci-cd.git'
+    }
+}
 
         stage('Build Docker Image') {
             steps {
