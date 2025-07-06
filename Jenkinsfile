@@ -6,11 +6,11 @@ pipeline {
     DEPLOY_SERVER = 'ubuntu@16.170.98.45'
   }
   stages {
-    stage('Clone Repository') {
-      steps {
-        git REPO_URL
-      }
+   stage('Clone Repository') {
+    steps {
+        git branch: 'main', credentialsId: 'dockerhub', url: REPO_URL
     }
+}
     stage('Build Docker Image') {
       steps {
         script {
