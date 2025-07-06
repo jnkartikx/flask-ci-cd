@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         REPO_URL = 'https://github.com/jnkartikx/flask-ci-cd.git'
-        DOCKER_IMAGE = 'kartikj7/rrequero/flask-app'
+        DOCKER_IMAGE = 'kartikj7/flask-app'
         DEPLOY_SERVER = 'ec2-user@16.16.209.95'
         DOCKER_USERNAME = credentials('docker-username') // Needs to be set in Jenkins Credentials
         DOCKER_PASSWORD = credentials('docker-password') // Needs to be set in Jenkins Credentials
